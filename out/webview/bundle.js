@@ -8522,6 +8522,7 @@
   }
 
   // src/webview/concourse-vis-view.ts
+  var activeGroup = null;
   function init2(container) {
     console.log("Initializing visualization in container", container);
     container.innerHTML = "";
@@ -8542,6 +8543,14 @@
     header.style.background = "#f8f9fa";
     header.style.borderBottom = "1px solid #ddd";
     container.appendChild(header);
+    const groupsContainer = document.createElement("div");
+    groupsContainer.id = "groups-container";
+    groupsContainer.style.display = "flex";
+    groupsContainer.style.flexWrap = "wrap";
+    groupsContainer.style.gap = "5px";
+    groupsContainer.style.padding = "10px";
+    groupsContainer.style.background = "#333";
+    container.appendChild(groupsContainer);
     console.log("Creating SVG element");
     const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svgElement.setAttribute("class", "pipeline-graph");
@@ -8552,10 +8561,78 @@
     const svg = select_default2(svgElement);
     svg.append("rect").attr("x", 10).attr("y", 10).attr("width", 50).attr("height", 50).attr("fill", "steelblue");
     console.log("Creating pipeline SVG");
-    const pipelineSvg = createPipelineSvg(svg);
+    const pipelineSvg2 = createPipelineSvg(svg);
     console.log("Visualization initialized successfully");
     container.removeChild(infoText);
-    return { svg: pipelineSvg };
+    return { svg: pipelineSvg2 };
+  }
+  function createGroupTabs(groups) {
+    const groupsContainer = document.getElementById("groups-container");
+    if (!groupsContainer)
+      return;
+    groupsContainer.innerHTML = "";
+    if (!groups || groups.length === 0) {
+      const allTab2 = createGroupTab("All", true);
+      groupsContainer.appendChild(allTab2);
+      activeGroup = null;
+      return;
+    }
+    groups.forEach((group2, index) => {
+      const isActive = index === 0 || group2.name === activeGroup;
+      if (isActive && activeGroup === null) {
+        activeGroup = group2.name;
+      }
+      const tab = createGroupTab(group2.name, isActive);
+      groupsContainer.appendChild(tab);
+    });
+    const allTab = createGroupTab("All", activeGroup === null);
+    groupsContainer.appendChild(allTab);
+  }
+  function createGroupTab(name, isActive) {
+    const tab = document.createElement("div");
+    tab.className = "group-tab";
+    tab.textContent = name;
+    tab.setAttribute("data-group", name);
+    tab.style.padding = "8px 16px";
+    tab.style.margin = "0";
+    tab.style.cursor = "pointer";
+    tab.style.fontFamily = "Inconsolata, monospace";
+    tab.style.fontSize = "14px";
+    tab.style.border = isActive ? "1px solid white" : "1px solid #555";
+    tab.style.backgroundColor = isActive ? "#333" : "#262626";
+    tab.style.color = isActive ? "white" : "#999";
+    tab.addEventListener("click", () => {
+      setActiveGroup(name === "All" ? null : name);
+    });
+    return tab;
+  }
+  function setActiveGroup(groupName) {
+    activeGroup = groupName;
+    const tabs = document.querySelectorAll(".group-tab");
+    tabs.forEach((tab) => {
+      const tabGroup = tab.getAttribute("data-group");
+      const isActive = tabGroup === "All" && groupName === null || tabGroup === groupName;
+      tab.style.border = isActive ? "1px solid white" : "1px solid #555";
+      tab.style.backgroundColor = isActive ? "#333" : "#262626";
+      tab.style.color = isActive ? "white" : "#999";
+    });
+    filterAndUpdatePipeline();
+  }
+  var pipelineJobs = [];
+  var pipelineResources = [];
+  var pipelineSvg = null;
+  function filterAndUpdatePipeline() {
+    if (!pipelineJobs.length || !pipelineSvg) {
+      console.log("No pipeline data available for filtering");
+      return;
+    }
+    console.log("Filtering pipeline for group:", activeGroup);
+    let filteredJobs = pipelineJobs;
+    if (activeGroup !== null) {
+      filteredJobs = pipelineJobs.filter((job) => job.groups.includes(activeGroup));
+      console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
+    }
+    draw(pipelineSvg, filteredJobs, pipelineResources);
   }
   function update(svg, rawYaml) {
     console.log("Updating visualization with YAML content, length:", rawYaml.length);
@@ -8573,7 +8650,9 @@
       console.log("YAML parsed successfully, keys:", Object.keys(obj));
       const resources = obj.resources || [];
       const jobs = obj.jobs || [];
-      console.log(`Found ${resources.length} resources and ${jobs.length} jobs`);
+      const groups = obj.groups || [];
+      console.log(`Found ${resources.length} resources, ${jobs.length} jobs, and ${groups.length} groups`);
+      createGroupTabs(groups);
       if (resources.length === 0 || jobs.length === 0) {
         console.warn("No resources or jobs found in YAML");
         svg.html("");
@@ -8586,6 +8665,11 @@
           status: "succeeded"
         };
         job.groups = [];
+        groups.forEach((group2) => {
+          if (group2.jobs.includes(job.name)) {
+            job.groups.push(group2.name);
+          }
+        });
         const inputs = [];
         const outputs = [];
         if (job.plan) {
@@ -8600,8 +8684,16 @@
         job.outputs = outputs;
         console.log(`Job ${job.name} has ${inputs.length} inputs and ${outputs.length} outputs`);
       });
+      pipelineJobs = jobs;
+      pipelineResources = resources;
+      pipelineSvg = svg;
+      let filteredJobs = jobs;
+      if (activeGroup !== null) {
+        filteredJobs = jobs.filter((job) => job.groups.includes(activeGroup));
+        console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
+      }
       console.log("Drawing pipeline with D3");
-      draw(svg, jobs, resources);
+      draw(svg, filteredJobs, resources);
       console.log("Pipeline drawing complete");
     } catch (e) {
       console.error("Error parsing or processing YAML:", e);
@@ -8647,6 +8739,7 @@
   // src/webview/index.ts
   var vscode = acquireVsCodeApi();
   console.log("Webview bundle script loaded");
+  var currentYamlContent = "";
   function updateStatus(message) {
     const statusElement = document.getElementById("status-message");
     if (statusElement) {
@@ -8675,6 +8768,12 @@
           updateStatus("View reset");
         });
       }
+      document.addEventListener("click", (event) => {
+        const target = event.target;
+        if (target && target.classList.contains("group-tab")) {
+          console.log("Group tab clicked:", target.getAttribute("data-group"));
+        }
+      });
       vscode.postMessage({
         type: "ready",
         message: "Webview initialized and ready"
@@ -8685,7 +8784,8 @@
         if (message.command === "updatePipeline") {
           try {
             updateStatus("Updating pipeline visualization...");
-            update(svg, message.text);
+            currentYamlContent = message.text;
+            update(svg, currentYamlContent);
             updateStatus("Pipeline visualization updated");
           } catch (error) {
             console.error("Error updating pipeline:", error);

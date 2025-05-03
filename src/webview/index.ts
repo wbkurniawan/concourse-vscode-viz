@@ -5,6 +5,9 @@ const vscode = acquireVsCodeApi();
 
 console.log('Webview bundle script loaded');
 
+// Store YAML content globally
+let currentYamlContent = '';
+
 // Update status message
 function updateStatus(message: string) {
   const statusElement = document.getElementById('status-message');
@@ -43,6 +46,15 @@ window.addEventListener('DOMContentLoaded', () => {
       });
     }
     
+    // Listen for group tab clicks (delegated event handling)
+    document.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target && target.classList.contains('group-tab')) {
+        console.log('Group tab clicked:', target.getAttribute('data-group'));
+        // The group switching logic is handled internally in concourse-vis-view.ts
+      }
+    });
+    
     // Send ready message to extension
     vscode.postMessage({ 
       type: 'ready',
@@ -57,7 +69,8 @@ window.addEventListener('DOMContentLoaded', () => {
       if (message.command === 'updatePipeline') {
         try {
           updateStatus('Updating pipeline visualization...');
-          update(svg, message.text);
+          currentYamlContent = message.text;
+          update(svg, currentYamlContent);
           updateStatus('Pipeline visualization updated');
         } catch (error) {
           console.error('Error updating pipeline:', error);

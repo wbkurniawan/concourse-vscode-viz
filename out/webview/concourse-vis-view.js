@@ -40,6 +40,8 @@ const yaml = __importStar(require("js-yaml"));
 const d3 = __importStar(require("d3"));
 const _ = __importStar(require("underscore"));
 const render_1 = require("./render");
+// Current active group
+let activeGroup = null;
 // Initialize the visualization
 function init(container) {
     console.log('Initializing visualization in container', container);
@@ -52,7 +54,7 @@ function init(container) {
     infoText.style.color = '#333';
     infoText.textContent = 'Concourse Pipeline Visualizer is initializing...';
     container.appendChild(infoText);
-    // Add logo header (optional)
+    // Add logo header
     const header = document.createElement('div');
     header.className = 'topbar-logo';
     header.textContent = 'Concourse Pipeline Visualizer';
@@ -64,6 +66,15 @@ function init(container) {
     header.style.background = '#f8f9fa';
     header.style.borderBottom = '1px solid #ddd';
     container.appendChild(header);
+    // Create groups container
+    const groupsContainer = document.createElement('div');
+    groupsContainer.id = 'groups-container';
+    groupsContainer.style.display = 'flex';
+    groupsContainer.style.flexWrap = 'wrap';
+    groupsContainer.style.gap = '5px';
+    groupsContainer.style.padding = '10px';
+    groupsContainer.style.background = '#333';
+    container.appendChild(groupsContainer);
     // Create SVG element
     console.log('Creating SVG element');
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -88,6 +99,90 @@ function init(container) {
     container.removeChild(infoText);
     return { svg: pipelineSvg };
 }
+// Create group tabs based on pipeline data
+function createGroupTabs(groups) {
+    const groupsContainer = document.getElementById('groups-container');
+    if (!groupsContainer)
+        return;
+    // Clear existing tabs
+    groupsContainer.innerHTML = '';
+    if (!groups || groups.length === 0) {
+        // If no groups defined, create an "All" tab
+        const allTab = createGroupTab('All', true);
+        groupsContainer.appendChild(allTab);
+        activeGroup = null;
+        return;
+    }
+    // Create tab for each group
+    groups.forEach((group, index) => {
+        const isActive = index === 0 || group.name === activeGroup;
+        if (isActive && activeGroup === null) {
+            activeGroup = group.name;
+        }
+        const tab = createGroupTab(group.name, isActive);
+        groupsContainer.appendChild(tab);
+    });
+    // Add "All" tab
+    const allTab = createGroupTab('All', activeGroup === null);
+    groupsContainer.appendChild(allTab);
+}
+// Create a single group tab element
+function createGroupTab(name, isActive) {
+    const tab = document.createElement('div');
+    tab.className = 'group-tab';
+    tab.textContent = name;
+    tab.setAttribute('data-group', name);
+    tab.style.padding = '8px 16px';
+    tab.style.margin = '0';
+    tab.style.cursor = 'pointer';
+    tab.style.fontFamily = 'Inconsolata, monospace';
+    tab.style.fontSize = '14px';
+    tab.style.border = isActive ? '1px solid white' : '1px solid #555';
+    tab.style.backgroundColor = isActive ? '#333' : '#262626';
+    tab.style.color = isActive ? 'white' : '#999';
+    tab.addEventListener('click', () => {
+        // Set active group and update view
+        setActiveGroup(name === 'All' ? null : name);
+    });
+    return tab;
+}
+// Set the active group and update the visualization
+function setActiveGroup(groupName) {
+    activeGroup = groupName;
+    // Update tab styles
+    const tabs = document.querySelectorAll('.group-tab');
+    tabs.forEach(tab => {
+        const tabGroup = tab.getAttribute('data-group');
+        const isActive = (tabGroup === 'All' && groupName === null) ||
+            (tabGroup === groupName);
+        tab.style.border = isActive ? '1px solid white' : '1px solid #555';
+        tab.style.backgroundColor = isActive ? '#333' : '#262626';
+        tab.style.color = isActive ? 'white' : '#999';
+    });
+    // Filter jobs and resources based on the active group
+    filterAndUpdatePipeline();
+}
+// Filter jobs and resources based on active group and update visualization
+// Store parsed pipeline data for refiltering
+let pipelineJobs = [];
+let pipelineResources = [];
+let pipelineSvg = null;
+function filterAndUpdatePipeline() {
+    // Check if we have pipeline data to work with
+    if (!pipelineJobs.length || !pipelineSvg) {
+        console.log('No pipeline data available for filtering');
+        return;
+    }
+    console.log('Filtering pipeline for group:', activeGroup);
+    // Filter jobs based on active group
+    let filteredJobs = pipelineJobs;
+    if (activeGroup !== null) {
+        filteredJobs = pipelineJobs.filter(job => job.groups.includes(activeGroup));
+        console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
+    }
+    // Redraw the pipeline with filtered jobs
+    (0, render_1.draw)(pipelineSvg, filteredJobs, pipelineResources);
+}
 // Update the visualization with new YAML content
 function update(svg, rawYaml) {
     console.log('Updating visualization with YAML content, length:', rawYaml.length);
@@ -104,10 +199,13 @@ function update(svg, rawYaml) {
             return;
         }
         console.log('YAML parsed successfully, keys:', Object.keys(obj));
-        // Extract resources and jobs
+        // Extract resources, jobs, and groups
         const resources = obj.resources || [];
         const jobs = obj.jobs || [];
-        console.log(`Found ${resources.length} resources and ${jobs.length} jobs`);
+        const groups = obj.groups || [];
+        console.log(`Found ${resources.length} resources, ${jobs.length} jobs, and ${groups.length} groups`);
+        // Create group tabs
+        createGroupTabs(groups);
         // Quick check of data for debugging
         if (resources.length === 0 || jobs.length === 0) {
             console.warn('No resources or jobs found in YAML');
@@ -128,7 +226,14 @@ function update(svg, rawYaml) {
             job.finished_build = {
                 status: "succeeded"
             };
+            // Store original groups from the pipeline definition
             job.groups = [];
+            // Find which groups this job belongs to
+            groups.forEach((group) => {
+                if (group.jobs.includes(job.name)) {
+                    job.groups.push(group.name);
+                }
+            });
             const inputs = [];
             const outputs = [];
             // Process each plan item
@@ -146,9 +251,19 @@ function update(svg, rawYaml) {
             job.outputs = outputs;
             console.log(`Job ${job.name} has ${inputs.length} inputs and ${outputs.length} outputs`);
         });
-        // Draw the pipeline
+        // Store pipeline data for future filtering
+        pipelineJobs = jobs;
+        pipelineResources = resources;
+        pipelineSvg = svg;
+        // Filter jobs based on active group
+        let filteredJobs = jobs;
+        if (activeGroup !== null) {
+            filteredJobs = jobs.filter((job) => job.groups.includes(activeGroup));
+            console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
+        }
+        // Draw the pipeline with filtered jobs
         console.log('Drawing pipeline with D3');
-        (0, render_1.draw)(svg, jobs, resources);
+        (0, render_1.draw)(svg, filteredJobs, resources);
         console.log('Pipeline drawing complete');
     }
     catch (e) {

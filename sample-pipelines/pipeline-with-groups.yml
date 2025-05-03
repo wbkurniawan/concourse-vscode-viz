@@ -1,0 +1,86 @@
+---
+groups:
+  - name: testing
+    jobs:
+      - unit
+      - integration
+
+  - name: staging
+    jobs:
+      - build
+      - deploy-staging
+
+  - name: production
+    jobs:
+      - deploy-production
+
+resources:
+  - name: code-repo
+    type: git
+    source:
+      uri: https://github.com/example/repo
+      branch: main
+
+  - name: staging-env
+    type: pool
+    source:
+      uri: https://github.com/example/environments
+      branch: main
+      pool: staging
+
+  - name: production-env
+    type: pool
+    source:
+      uri: https://github.com/example/environments
+      branch: main
+      pool: production
+
+jobs:
+  - name: unit
+    plan:
+      - get: code-repo
+        trigger: true
+      - task: run-unit-tests
+        file: code-repo/ci/tasks/unit-tests.yml
+
+  - name: integration
+    plan:
+      - get: code-repo
+        trigger: true
+        passed: [unit]
+      - task: run-integration-tests
+        file: code-repo/ci/tasks/integration-tests.yml
+
+  - name: build
+    plan:
+      - get: code-repo
+        trigger: true
+        passed: [integration]
+      - task: build-artifact
+        file: code-repo/ci/tasks/build.yml
+      - put: staging-env
+        params:
+          acquire: true
+
+  - name: deploy-staging
+    plan:
+      - get: code-repo
+        passed: [build]
+      - get: staging-env
+        passed: [build]
+      - task: deploy-to-staging
+        file: code-repo/ci/tasks/deploy.yml
+        params:
+          ENVIRONMENT: staging
+
+  - name: deploy-production
+    plan:
+      - get: code-repo
+        passed: [deploy-staging]
+      - put: production-env
+        params:
+          acquire: true
+      - task: deploy-to-production
+        file: code-repo/ci/tasks/deploy.yml
+        params:
+          ENVIRONMENT: production

@@ -4,6 +4,8 @@ const concourse_vis_view_1 = require("./concourse-vis-view");
 // Acquire the VS Code API
 const vscode = acquireVsCodeApi();
 console.log('Webview bundle script loaded');
+// Store YAML content globally
+let currentYamlContent = '';
 // Update status message
 function updateStatus(message) {
     const statusElement = document.getElementById('status-message');
@@ -36,6 +38,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 updateStatus('View reset');
             });
         }
+        // Listen for group tab clicks (delegated event handling)
+        document.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target && target.classList.contains('group-tab')) {
+                console.log('Group tab clicked:', target.getAttribute('data-group'));
+                // The group switching logic is handled internally in concourse-vis-view.ts
+            }
+        });
         // Send ready message to extension
         vscode.postMessage({
             type: 'ready',
@@ -48,7 +58,8 @@ window.addEventListener('DOMContentLoaded', () => {
             if (message.command === 'updatePipeline') {
                 try {
                     updateStatus('Updating pipeline visualization...');
-                    (0, concourse_vis_view_1.update)(svg, message.text);
+                    currentYamlContent = message.text;
+                    (0, concourse_vis_view_1.update)(svg, currentYamlContent);
                     updateStatus('Pipeline visualization updated');
                 }
                 catch (error) {
