@@ -3,14 +3,14 @@ resources:
   - name: concourse
     type: git
     source:
-      uri: https://github.com/concourse/concourse
+      uri: https://github.com/concourse/concourse.git
       branch: master
 
   - name: version
     type: semver
     source:
       driver: git
-      uri: https://github.com/concourse/version
+      uri: https://github.com/concourse/version.git
       branch: master
       file: version
 

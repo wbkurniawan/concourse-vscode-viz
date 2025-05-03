@@ -3,7 +3,7 @@ resources:
   - name: repo
     type: git
     source:
-      uri: https://github.com/example/repo
+      uri: https://github.com/example/repo.git
       branch: main
 
 jobs:

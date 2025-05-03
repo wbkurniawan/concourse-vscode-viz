@@ -18,20 +18,20 @@ resources:
   - name: code-repo
     type: git
     source:
-      uri: https://github.com/example/repo
+      uri: https://github.com/example/repo.git
       branch: main
 
   - name: staging-env
     type: pool
     source:
-      uri: https://github.com/example/environments
+      uri: https://github.com/example/environments.git
       branch: main
       pool: staging
 
   - name: production-env
     type: pool
     source:
-      uri: https://github.com/example/environments
+      uri: https://github.com/example/environments.git
       branch: main
       pool: production
 

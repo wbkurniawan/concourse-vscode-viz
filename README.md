@@ -33,7 +33,7 @@ Search for "Concourse Pipeline Visualizer" in the VS Code extensions marketplace
 ## Usage
 
 1. Open a Concourse pipeline YAML file in VS Code
-2. Run the command "Show Concourse Pipeline Preview" from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P)
+2. Run the command "Show Concourse Pipeline Preview" from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P) or click on the "Open Preview" icon
 3. The preview will open in a side panel and update as you edit
 4. Use group tabs to view different sections of your pipeline
 5. Use the Reset View button to reset the zoom level
@@ -44,7 +44,7 @@ If you want to build the extension from source:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YourUsername/concourse-vscode-viz.git
+git clone https://github.com/wbkurniawan/concourse-vscode-viz.git
 
 # Install dependencies
 cd concourse-vscode-viz

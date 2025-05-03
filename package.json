@@ -3,10 +3,10 @@
   "displayName": "Concourse Pipeline Visualizer",
   "description": "Preview Concourse CI pipelines in VS Code",
   "version": "0.1.0",
-  "publisher": "YourPublisherName",
+  "publisher": "KrakatoaCaldera",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YourUsername/concourse-vscode-viz"
+    "url": "https://github.com/wbkurniawan/concourse-vscode-viz"
   },
   "engines": {
     "vscode": "^1.60.0"
@@ -36,7 +36,8 @@
     "commands": [
       {
         "command": "concourse-vscode-viz.showPipelinePreview",
-        "title": "Show Concourse Pipeline Preview"
+        "title": "Show Concourse Pipeline Preview",
+        "icon": "$(open-preview)"
       }
     ],
     "languages": [
@@ -47,7 +48,16 @@
           ".yaml"
         ]
       }
-    ]
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "concourse-vscode-viz.showPipelinePreview",
+          "when": "resourceExtname == .yml || resourceExtname == .yaml",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -72,7 +82,7 @@
     "@typescript-eslint/eslint-plugin": "^5.42.0",
     "@typescript-eslint/parser": "^5.42.0",
     "@vscode/vsce": "^3.3.2",
-    "esbuild": "^0.19.0",
+    "esbuild": "^0.25.3",
     "eslint": "^8.26.0",
     "typescript": "^5.2.2"
   }
