@@ -1,0 +1,66 @@
+---
+resources:
+  - name: concourse
+    type: git
+    source:
+      uri: https://github.com/concourse/concourse
+      branch: master
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: https://github.com/concourse/version
+      branch: master
+      file: version
+
+  - name: final-release
+    type: github-release
+    source:
+      owner: concourse
+      repository: concourse
+      access_token: ((github-access-token))
+
+jobs:
+  - name: unit
+    plan:
+      - get: concourse
+        trigger: true
+      - task: unit
+        file: concourse/ci/unit.yml
+
+  - name: integration
+    plan:
+      - get: concourse
+        trigger: true
+        passed: [unit]
+      - task: integration
+        file: concourse/ci/integration.yml
+
+  - name: build
+    plan:
+      - get: concourse
+        passed: [unit, integration]
+        trigger: true
+      - get: version
+        params: {bump: patch}
+      - task: build-binaries
+        file: concourse/ci/build-binaries.yml
+        params:
+          PLATFORM: linux
+      - put: version
+        params: {file: version/version}
+
+  - name: release
+    plan:
+      - get: concourse
+        passed: [build]
+      - get: version
+        passed: [build]
+      - task: create-release-notes
+        file: concourse/ci/create-release-notes.yml
+      - put: final-release
+        params:
+          name: release-notes/name
+          tag: version/version
+          body: release-notes/notes.md

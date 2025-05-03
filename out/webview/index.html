@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Concourse Pipeline Preview</title>
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    #pipeline-container {
+      width: 100%;
+      height: 100vh;
+    }
+    
+    /* Styling for the pipeline graph */
+    svg.pipeline-graph {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Node styles */
+    .node text {
+      font-size: 12px;
+      fill: #333;
+    }
+
+    .node.job rect {
+      fill: #3498db;
+      stroke: #2980b9;
+      stroke-width: 1px;
+      rx: 3px;
+      ry: 3px;
+    }
+
+    .node.output rect, .node.input rect, .node.constrained-input rect {
+      fill: #2ecc71;
+      stroke: #27ae60;
+      stroke-width: 1px;
+      rx: 3px;
+      ry: 3px;
+    }
+
+    /* Edge styles */
+    .edge path {
+      fill: none;
+      stroke: #95a5a6;
+      stroke-width: 2px;
+    }
+
+    .edge.trigger-false path {
+      stroke-dasharray: 5, 2;
+    }
+
+    /* Status colors */
+    .node.succeeded rect { fill: #2ecc71; }
+    .node.failed rect { fill: #e74c3c; }
+    .node.pending rect { fill: #f39c12; }
+    .node.paused rect { fill: #95a5a6; }
+    .node.no-builds rect { fill: #bdc3c7; }
+    
+    /* Active/hover state */
+    .node.active rect, .edge.active path {
+      stroke: #f1c40f;
+      stroke-width: 2px;
+    }
+    
+    /* Controls */
+    .controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 4px;
+      padding: 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      display: flex;
+      gap: 5px;
+    }
+    
+    .control-button {
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .control-button:hover {
+      background: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div id="pipeline-container"></div>
+  <div class="controls">
+    <button id="reset-zoom" class="control-button">Reset View</button>
+  </div>
+  <script src="bundle.js"></script>
+</body>
+</html>
