@@ -1,0 +1,23 @@
+---
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: https://github.com/example/repo
+      branch: main
+
+jobs:
+  - name: test
+    plan:
+      - get: repo
+        trigger: true
+      - task: run-tests
+        file: repo/ci/test.yml
+
+  - name: build
+    plan:
+      - get: repo
+        passed: [test]
+        trigger: true
+      - task: compile
+        file: repo/ci/build.yml

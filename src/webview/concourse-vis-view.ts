@@ -50,15 +50,44 @@ export function init(container: HTMLElement): { svg: d3.Selection<any, any, any,
   header.style.borderBottom = '1px solid #444';
   container.appendChild(header);
   
-  // Create groups container
+  // Create groups bar (will contain both groups and reset button)
+  const groupsBar = document.createElement('div');
+  groupsBar.style.display = 'flex';
+  groupsBar.style.justifyContent = 'space-between'; // Separate groups and reset button
+  groupsBar.style.background = '#333';
+  groupsBar.style.padding = '5px 10px';
+  container.appendChild(groupsBar);
+  
+  // Create groups container (left side of bar)
   const groupsContainer = document.createElement('div');
   groupsContainer.id = 'groups-container';
   groupsContainer.style.display = 'flex';
   groupsContainer.style.flexWrap = 'wrap';
   groupsContainer.style.gap = '5px';
-  groupsContainer.style.padding = '10px';
-  groupsContainer.style.background = '#333';
-  container.appendChild(groupsContainer);
+  groupsContainer.style.alignItems = 'center';
+  groupsBar.appendChild(groupsContainer);
+  
+  // Create reset button container (right side of bar)
+  const resetContainer = document.createElement('div');
+  resetContainer.style.display = 'flex';
+  resetContainer.style.alignItems = 'center';
+  
+  // Create reset button
+  const resetButton = document.createElement('button');
+  resetButton.id = 'reset-zoom';
+  resetButton.textContent = 'Reset View';
+  resetButton.style.background = '#3498db';
+  resetButton.style.color = 'white';
+  resetButton.style.border = 'none';
+  resetButton.style.borderRadius = '3px';
+  resetButton.style.padding = '5px 10px';
+  resetButton.style.cursor = 'pointer';
+  resetButton.style.fontFamily = 'Inconsolata, monospace';
+  resetButton.style.fontSize = '14px';
+  resetButton.addEventListener('click', resetZoom);
+  
+  resetContainer.appendChild(resetButton);
+  groupsBar.appendChild(resetContainer);
   
   // Create SVG element
   console.log('Creating SVG element');
@@ -185,7 +214,9 @@ function filterAndUpdatePipeline(): void {
   // Filter jobs based on active group
   let filteredJobs = pipelineJobs;
   if (activeGroup !== null) {
-    filteredJobs = pipelineJobs.filter(job => job.groups.includes(activeGroup));
+    filteredJobs = pipelineJobs.filter(job => 
+      job.groups && Array.isArray(job.groups) && job.groups.includes(activeGroup)
+    );
     console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
   }
   
@@ -251,11 +282,13 @@ export function update(svg: d3.Selection<any, any, any, any>, rawYaml: string): 
       job.groups = [];
       
       // Find which groups this job belongs to
-      groups.forEach((group: PipelineGroup) => {
-        if (group.jobs.includes(job.name)) {
-          job.groups.push(group.name);
-        }
-      });
+      if (groups && groups.length > 0) {
+        groups.forEach((group: PipelineGroup) => {
+          if (group.jobs && group.jobs.includes(job.name)) {
+            job.groups.push(group.name);
+          }
+        });
+      }
       
       const inputs: JobIO[] = [];
       const outputs: JobIO[] = [];
@@ -284,7 +317,10 @@ export function update(svg: d3.Selection<any, any, any, any>, rawYaml: string): 
     // Filter jobs based on active group
     let filteredJobs = jobs;
     if (activeGroup !== null) {
-      filteredJobs = jobs.filter((job: any) => job.groups.includes(activeGroup));
+      // Make sure job.groups exists before filtering
+      filteredJobs = jobs.filter((job: any) => 
+        job.groups && Array.isArray(job.groups) && job.groups.includes(activeGroup)
+      );
       console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
     }
     

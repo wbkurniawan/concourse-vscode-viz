@@ -8544,14 +8544,36 @@
     header.style.color = "#ffffff";
     header.style.borderBottom = "1px solid #444";
     container.appendChild(header);
+    const groupsBar = document.createElement("div");
+    groupsBar.style.display = "flex";
+    groupsBar.style.justifyContent = "space-between";
+    groupsBar.style.background = "#333";
+    groupsBar.style.padding = "5px 10px";
+    container.appendChild(groupsBar);
     const groupsContainer = document.createElement("div");
     groupsContainer.id = "groups-container";
     groupsContainer.style.display = "flex";
     groupsContainer.style.flexWrap = "wrap";
     groupsContainer.style.gap = "5px";
-    groupsContainer.style.padding = "10px";
-    groupsContainer.style.background = "#333";
-    container.appendChild(groupsContainer);
+    groupsContainer.style.alignItems = "center";
+    groupsBar.appendChild(groupsContainer);
+    const resetContainer = document.createElement("div");
+    resetContainer.style.display = "flex";
+    resetContainer.style.alignItems = "center";
+    const resetButton = document.createElement("button");
+    resetButton.id = "reset-zoom";
+    resetButton.textContent = "Reset View";
+    resetButton.style.background = "#3498db";
+    resetButton.style.color = "white";
+    resetButton.style.border = "none";
+    resetButton.style.borderRadius = "3px";
+    resetButton.style.padding = "5px 10px";
+    resetButton.style.cursor = "pointer";
+    resetButton.style.fontFamily = "Inconsolata, monospace";
+    resetButton.style.fontSize = "14px";
+    resetButton.addEventListener("click", resetZoom);
+    resetContainer.appendChild(resetButton);
+    groupsBar.appendChild(resetContainer);
     console.log("Creating SVG element");
     const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svgElement.setAttribute("class", "pipeline-graph");
@@ -8630,7 +8652,9 @@
     console.log("Filtering pipeline for group:", activeGroup);
     let filteredJobs = pipelineJobs;
     if (activeGroup !== null) {
-      filteredJobs = pipelineJobs.filter((job) => job.groups.includes(activeGroup));
+      filteredJobs = pipelineJobs.filter(
+        (job) => job.groups && Array.isArray(job.groups) && job.groups.includes(activeGroup)
+      );
       console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
     }
     draw(pipelineSvg, filteredJobs, pipelineResources);
@@ -8666,11 +8690,13 @@
           status: "succeeded"
         };
         job.groups = [];
-        groups.forEach((group2) => {
-          if (group2.jobs.includes(job.name)) {
-            job.groups.push(group2.name);
-          }
-        });
+        if (groups && groups.length > 0) {
+          groups.forEach((group2) => {
+            if (group2.jobs && group2.jobs.includes(job.name)) {
+              job.groups.push(group2.name);
+            }
+          });
+        }
         const inputs = [];
         const outputs = [];
         if (job.plan) {
@@ -8690,7 +8716,9 @@
       pipelineSvg = svg;
       let filteredJobs = jobs;
       if (activeGroup !== null) {
-        filteredJobs = jobs.filter((job) => job.groups.includes(activeGroup));
+        filteredJobs = jobs.filter(
+          (job) => job.groups && Array.isArray(job.groups) && job.groups.includes(activeGroup)
+        );
         console.log(`Filtered to ${filteredJobs.length} jobs in group: ${activeGroup}`);
       }
       console.log("Drawing pipeline with D3");
@@ -8761,14 +8789,6 @@
       updateStatus("Initializing D3 visualization...");
       const { svg } = init2(container);
       updateStatus("Visualization initialized, waiting for pipeline data...");
-      const resetButton = document.getElementById("reset-zoom");
-      if (resetButton) {
-        resetButton.addEventListener("click", () => {
-          console.log("Reset zoom button clicked");
-          resetZoom();
-          updateStatus("View reset");
-        });
-      }
       document.addEventListener("click", (event) => {
         const target = event.target;
         if (target && target.classList.contains("group-tab")) {

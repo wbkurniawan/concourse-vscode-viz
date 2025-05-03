@@ -29,15 +29,8 @@ window.addEventListener('DOMContentLoaded', () => {
         updateStatus('Initializing D3 visualization...');
         const { svg } = (0, concourse_vis_view_1.init)(container);
         updateStatus('Visualization initialized, waiting for pipeline data...');
-        // Set up reset zoom button
-        const resetButton = document.getElementById('reset-zoom');
-        if (resetButton) {
-            resetButton.addEventListener('click', () => {
-                console.log('Reset zoom button clicked');
-                (0, concourse_vis_view_1.resetZoom)();
-                updateStatus('View reset');
-            });
-        }
+        // Reset button is now created and handled in concourse-vis-view.ts
+        // No need to set it up here
         // Listen for group tab clicks (delegated event handling)
         document.addEventListener('click', (event) => {
             const target = event.target;

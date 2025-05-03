@@ -41,8 +41,17 @@ function activate(context) {
     // Register the command to show the Concourse pipeline visualization
     const disposable = vscode.commands.registerCommand('concourse-vscode-viz.showPipelinePreview', () => {
         console.log('Command executed: concourse-vscode-viz.showPipelinePreview');
+        // Get the active editor
+        const editor = vscode.window.activeTextEditor;
+        let title = 'Concourse Pipeline Preview';
+        // Get pipeline name from filename if available
+        if (editor) {
+            // Extract just the filename without path or extension
+            const fileName = path.basename(editor.document.fileName, path.extname(editor.document.fileName));
+            title = `Pipeline: ${fileName}`;
+        }
         // Create the webview panel
-        const panel = vscode.window.createWebviewPanel('concoursePipelinePreview', 'Concourse Pipeline Preview', vscode.ViewColumn.Beside, {
+        const panel = vscode.window.createWebviewPanel('concoursePipelinePreview', title, vscode.ViewColumn.Beside, {
             enableScripts: true,
             localResourceRoots: [
                 vscode.Uri.file(path.join(context.extensionPath, 'out', 'webview'))
@@ -277,9 +286,6 @@ function getWebviewContent(scriptUri) {
 <body>
   <div id="status-message">Initializing Concourse Pipeline Visualizer...</div>
   <div id="pipeline-container"></div>
-  <div class="controls">
-    <button id="reset-zoom" class="control-button">Reset View</button>
-  </div>
   <script>
     // This script runs before the bundle is loaded
     console.log('Webview HTML loaded');

@@ -36,15 +36,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const { svg } = init(container);
     updateStatus('Visualization initialized, waiting for pipeline data...');
     
-    // Set up reset zoom button
-    const resetButton = document.getElementById('reset-zoom');
-    if (resetButton) {
-      resetButton.addEventListener('click', () => {
-        console.log('Reset zoom button clicked');
-        resetZoom();
-        updateStatus('View reset');
-      });
-    }
+    // Reset button is now created and handled in concourse-vis-view.ts
+    // No need to set it up here
     
     // Listen for group tab clicks (delegated event handling)
     document.addEventListener('click', (event) => {
