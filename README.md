@@ -17,7 +17,15 @@ A VS Code extension for previewing Concourse CI pipeline files directly in your 
 
 - VS Code 1.60.0 or higher
 
-## Installation
+## Usage
+
+1. Open a Concourse pipeline YAML file in VS Code
+2. Run the command "Show Concourse Pipeline Preview" from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P) or click on the "Open Preview" icon
+3. The preview will open in a side panel and update as you edit
+4. Use group tabs to view different sections of your pipeline
+5. Use the Reset View button to reset the zoom level
+
+## Installation (GitHub)
 
 ### From VSIX file (direct sharing)
 
@@ -26,17 +34,9 @@ A VS Code extension for previewing Concourse CI pipeline files directly in your 
    - Option 1: Run `code --install-extension concourse-vscode-viz-0.1.0.vsix` in your terminal
    - Option 2: In VS Code, go to Extensions view → Click "..." → "Install from VSIX..." → Select the downloaded file
 
-### From VS Code Marketplace (coming soon)
+### From VS Code Marketplace
 
 Search for "Concourse Pipeline Visualizer" in the VS Code extensions marketplace and click install.
-
-## Usage
-
-1. Open a Concourse pipeline YAML file in VS Code
-2. Run the command "Show Concourse Pipeline Preview" from the Command Palette (Ctrl+Shift+P or Cmd+Shift+P) or click on the "Open Preview" icon
-3. The preview will open in a side panel and update as you edit
-4. Use group tabs to view different sections of your pipeline
-5. Use the Reset View button to reset the zoom level
 
 ## Building from Source
 
