@@ -135,6 +135,7 @@ function getWebviewContent(scriptUri) {
       padding: 0;
       overflow: hidden;
       font-family: Inconsolata, monospace;
+      background-color: #2a2a2a; /* Dark gray background */
     }
     
     @font-face {
@@ -146,6 +147,7 @@ function getWebviewContent(scriptUri) {
     #pipeline-container {
       width: 100%;
       height: 100vh;
+      background-color: #2a2a2a; /* Dark gray background */
     }
     #status-message {
       position: absolute;
@@ -157,6 +159,7 @@ function getWebviewContent(scriptUri) {
       border-radius: 4px;
       font-size: 14px;
       z-index: 100;
+      display: none; /* Hide the status message but keep it for debugging */
     }
     .controls {
       position: absolute;
@@ -184,6 +187,7 @@ function getWebviewContent(scriptUri) {
     svg.pipeline-graph {
       width: 100%;
       height: 100%;
+      background-color: #2a2a2a; /* Dark gray background similar to Concourse */
     }
     
     /* Node styles - default */

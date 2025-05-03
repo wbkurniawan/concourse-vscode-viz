@@ -221,7 +221,7 @@ export function createPipelineSvg(svg: d3.Selection<any, any, any, any>): d3.Sel
     
     svg.call(zoom as any);
     
-    // Debug rectangle to check if the SVG is rendering
+    // Debug rectangle to check if the SVG is rendering - hidden but kept for future use
     g.append("rect")
       .attr("x", 20)
       .attr("y", 20)
@@ -229,7 +229,8 @@ export function createPipelineSvg(svg: d3.Selection<any, any, any, any>): d3.Sel
       .attr("height", 60)
       .attr("fill", "purple")
       .attr("stroke", "white")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 2)
+      .style("display", "none"); // Hide the rectangle
       
     g.append("text")
       .attr("x", 70)
@@ -237,7 +238,8 @@ export function createPipelineSvg(svg: d3.Selection<any, any, any, any>): d3.Sel
       .attr("fill", "white")
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
-      .text("Pipeline View");
+      .text("Pipeline View")
+      .style("display", "none"); // Hide the text
   }
   
   return g;

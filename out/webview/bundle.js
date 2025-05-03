@@ -8353,8 +8353,8 @@
         g.attr("transform", event.transform);
       });
       svg.call(zoom);
-      g.append("rect").attr("x", 20).attr("y", 20).attr("width", 100).attr("height", 60).attr("fill", "purple").attr("stroke", "white").attr("stroke-width", 2);
-      g.append("text").attr("x", 70).attr("y", 50).attr("fill", "white").attr("text-anchor", "middle").attr("dominant-baseline", "middle").text("Pipeline View");
+      g.append("rect").attr("x", 20).attr("y", 20).attr("width", 100).attr("height", 60).attr("fill", "purple").attr("stroke", "white").attr("stroke-width", 2).style("display", "none");
+      g.append("text").attr("x", 70).attr("y", 50).attr("fill", "white").attr("text-anchor", "middle").attr("dominant-baseline", "middle").text("Pipeline View").style("display", "none");
     }
     return g;
   }
@@ -8540,8 +8540,9 @@
     header.style.fontWeight = "bold";
     header.style.fontSize = "18px";
     header.style.fontFamily = "Inconsolata, monospace";
-    header.style.background = "#f8f9fa";
-    header.style.borderBottom = "1px solid #ddd";
+    header.style.background = "#000000";
+    header.style.color = "#ffffff";
+    header.style.borderBottom = "1px solid #444";
     container.appendChild(header);
     const groupsContainer = document.createElement("div");
     groupsContainer.id = "groups-container";

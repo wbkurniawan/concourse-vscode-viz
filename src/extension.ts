@@ -131,6 +131,7 @@ function getWebviewContent(scriptUri: vscode.Uri): string {
       padding: 0;
       overflow: hidden;
       font-family: Inconsolata, monospace;
+      background-color: #2a2a2a; /* Dark gray background */
     }
     
     @font-face {
@@ -142,6 +143,7 @@ function getWebviewContent(scriptUri: vscode.Uri): string {
     #pipeline-container {
       width: 100%;
       height: 100vh;
+      background-color: #2a2a2a; /* Dark gray background */
     }
     #status-message {
       position: absolute;
@@ -153,6 +155,7 @@ function getWebviewContent(scriptUri: vscode.Uri): string {
       border-radius: 4px;
       font-size: 14px;
       z-index: 100;
+      display: none; /* Hide the status message but keep it for debugging */
     }
     .controls {
       position: absolute;
@@ -180,6 +183,7 @@ function getWebviewContent(scriptUri: vscode.Uri): string {
     svg.pipeline-graph {
       width: 100%;
       height: 100%;
+      background-color: #2a2a2a; /* Dark gray background similar to Concourse */
     }
     
     /* Node styles - default */

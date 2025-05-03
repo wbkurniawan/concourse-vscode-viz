@@ -209,7 +209,7 @@ function createPipelineSvg(svg) {
             g.attr("transform", event.transform);
         });
         svg.call(zoom);
-        // Debug rectangle to check if the SVG is rendering
+        // Debug rectangle to check if the SVG is rendering - hidden but kept for future use
         g.append("rect")
             .attr("x", 20)
             .attr("y", 20)
@@ -217,14 +217,16 @@ function createPipelineSvg(svg) {
             .attr("height", 60)
             .attr("fill", "purple")
             .attr("stroke", "white")
-            .attr("stroke-width", 2);
+            .attr("stroke-width", 2)
+            .style("display", "none"); // Hide the rectangle
         g.append("text")
             .attr("x", 70)
             .attr("y", 50)
             .attr("fill", "white")
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .text("Pipeline View");
+            .text("Pipeline View")
+            .style("display", "none"); // Hide the text
     }
     return g;
 }

@@ -45,8 +45,9 @@ export function init(container: HTMLElement): { svg: d3.Selection<any, any, any,
   header.style.fontWeight = 'bold';
   header.style.fontSize = '18px';
   header.style.fontFamily = 'Inconsolata, monospace';
-  header.style.background = '#f8f9fa';
-  header.style.borderBottom = '1px solid #ddd';
+  header.style.background = '#000000'; // Black background
+  header.style.color = '#ffffff'; // White text
+  header.style.borderBottom = '1px solid #444';
   container.appendChild(header);
   
   // Create groups container
